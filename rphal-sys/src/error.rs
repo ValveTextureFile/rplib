@@ -16,7 +16,7 @@ impl Display for HalError {
     }
 }
 
-pub(crate) type HalResult<T> = Result<T, HalError>;
+pub type HalResult<T> = Result<T, HalError>;
 
 pub(crate) fn check(status: i32) -> HalResult<()> {
     if status == 0 {

@@ -1,34 +1,22 @@
-use std::{os::macos::raw::stat, ptr, thread, time::Duration};
+use rphal_sys::{
+    digital::DigitalOutput, robot::Robot, *
+};
 
-use rphal_sys::*;
+struct Blinky {
+    led: DigitalOutput,
+    on: bool
+}
 
-fn robot() {
-    unsafe {
-        let mut status = 0;
-        let port = HAL_GetPort(0);
-        let dio = HAL_InitializeDIOPort(port, 0, ptr::null(), &mut status);
-        assert_eq!(status, 0, "unable to init dio");
-
-        let mut on = false;
-        loop {
-            on = !on;
-
-            HAL_SetDIO(dio, on as HAL_Bool, &mut status);
-            thread::sleep(Duration::from_millis(500));
-        }
-
+impl Robot for Blinky {
+    fn teleop_periodic(&mut self) {
+        self.on = !self.on;
+        self.led.set(self.on).unwrap();
     }
 }
 
-fn main() {
-    unsafe {
-        assert!(HAL_Initialize(500, 0) != 0, "hal failed to init");
-
-        if HAL_HasMain() != 0 {
-            thread::spawn(robot);
-            HAL_RunMain();
-        } else {
-            robot();
-        }
-    }
+fn main() -> error::HalResult<()> {
+    rphal_sys::robot::run(|| Blinky {
+        led: DigitalOutput::new(0).unwrap(),
+        on: false
+    })
 }
