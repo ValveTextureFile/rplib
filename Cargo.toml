@@ -1,0 +1,2 @@
+[workspace]
+members = ["rphal-sys", "rplib"]

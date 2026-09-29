@@ -1,0 +1,22 @@
+# Build output (every crate's target/)
+target/
+**/*.rs.bk
+
+# Local WPILib Maven symlink and raw downloads
+frcmaven
+.ziparchives/
+
+# Vendored WPILib archives. The extracted headers/ and lib/ folders are what
+# the build uses and ARE committed; the original zips are redundant.
+rphal-sys/headers/*.zip
+
+# HAL simulation runtime state (written to the working dir by the sim GUI)
+simgui*.json
+networktables.json
+networktables.json.bck
+*.wpilog
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp
