@@ -16,14 +16,14 @@ pub fn run<R: Robot>(make: impl FnOnce() -> R + Send + 'static) -> ! {
     let def_hook = panic::take_hook();
     panic::set_hook(Box::new(move |inf| {
         def_hook(inf);
-        std::process::exit(1);
+        process::exit(1);
     }));
 
     unsafe {
         if HAL_HasMain() != 0 {
             thread::spawn(move || robot_loop(make));
             HAL_RunMain();
-            std::process::exit(0);
+            process::exit(0);
         } else {
             robot_loop(make);
         }
@@ -39,20 +39,18 @@ fn robot_loop<R: Robot>(make: impl FnOnce() -> R) -> ! {
     loop {
         unsafe { HAL_RefreshDSData() };
 
-        let mut word: HAL_ControlWord = unsafe {std::mem::zeroed()};
-        unsafe {HAL_GetControlWord(&mut word)};
+        let mut word: HAL_ControlWord = unsafe { std::mem::zeroed() };
+        unsafe { HAL_GetControlWord(&mut word) };
 
         if word.enabled() == 0 {
-            unsafe { HAL_ObserveUserProgramDisabled()};
+            unsafe { HAL_ObserveUserProgramDisabled() };
             robot.disabled_periodic();
         } else if word.autonomous() != 0 {
-            unsafe {HAL_ObserveUserProgramAutonomous()};
+            unsafe { HAL_ObserveUserProgramAutonomous() };
             robot.auton_periodic();
         } else {
-            unsafe {HAL_ObserveUserProgramTeleop()};
+            unsafe { HAL_ObserveUserProgramTeleop() };
             robot.teleop_periodic();
         }
-
-        thread::sleep(Duration::from_millis(20));
     }
 }
