@@ -1,10 +1,12 @@
 use rphal_sys::{
-    digital::DigitalOutput, robot::Robot, *
+    robot::Robot,
+    types::digital::{DIOState, DigitalOutput},
+    *,
 };
 
 struct Blinky {
     led: DigitalOutput,
-    on: bool
+    on: DIOState,
 }
 
 impl Robot for Blinky {
@@ -14,9 +16,9 @@ impl Robot for Blinky {
     }
 }
 
-fn main() -> error::HalResult<()> {
+fn main() -> types::error::HalResult<()> {
     rphal_sys::robot::run(|| Blinky {
         led: DigitalOutput::new(0).unwrap(),
-        on: false
+        on: DIOState::LOW,
     })
 }

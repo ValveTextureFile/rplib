@@ -7,18 +7,22 @@ fn main() {
     let hal_include = headers.join("hal/include");
     let wpiutil_include = headers.join("wpiutil/include");
 
-    // Only the macOS universal binaries are vendored so far.
-    let platform = match env::var("CARGO_CFG_TARGET_OS").unwrap().as_str() {
-        "macos" => "osxuniversal",
-        other => panic!("rphal-sys: no vendored HAL libraries for target OS `{other}`"),
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+    let platform = match (target_os.as_str(), target_arch.as_str()) {
+        ("macos", _) => "osxuniversal",
+        ("linux", "x86_64") => "linuxx86-64",
+        (os, arch) => panic!("rphal-sys: no vendored HAL libraries for target `{os}`/`{arch}`"),
     };
 
-    for lib in ["hal", "wpiutil"] {
-        let dir = headers.join(lib).join("lib").join(platform);
-        println!("cargo:rustc-link-search=native={}", dir.display());
-        // Absolute rpath so binaries run straight out of target/.
-        println!("cargo:rustc-link-arg=-Wl,-rpath,{}", dir.display());
-    }
+    // hal and wpiutil libs are vendored side by side (not split by crate)
+    // because libwpiHal's own rpath is `$ORIGIN`: it looks for libwpiutil
+    // right next to itself, and that lookup isn't affected by any rpath
+    // we set on the final binary.
+    let lib_dir = headers.join("lib").join(platform);
+    println!("cargo:rustc-link-search=native={}", lib_dir.display());
+    // Absolute rpath so binaries run straight out of target/.
+    println!("cargo:rustc-link-arg=-Wl,-rpath,{}", lib_dir.display());
     println!("cargo:rustc-link-lib=dylib=wpiHal");
     println!("cargo:rustc-link-lib=dylib=wpiutil");
 

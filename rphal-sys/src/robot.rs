@@ -52,7 +52,5 @@ fn robot_loop<R: Robot>(make: impl FnOnce() -> R) -> ! {
             unsafe { HAL_ObserveUserProgramTeleop() };
             robot.teleop_periodic();
         }
-
-        
     }
 }
