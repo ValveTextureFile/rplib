@@ -1,4 +1,4 @@
-use std::{any::Any, error::Error, ffi::CStr, fmt::Display};
+use std::{error::Error, ffi::CStr, fmt::Display};
 
 use crate::HAL_GetErrorMessage;
 
@@ -26,6 +26,5 @@ pub(crate) fn check(status: i32) -> HalResult<()> {
     let msg = unsafe {
         CStr::from_ptr(HAL_GetErrorMessage(status))
     }.to_string_lossy().into_owned();
-
-    Ok(())
+    Err(HalError { code: status, msg })
 }
